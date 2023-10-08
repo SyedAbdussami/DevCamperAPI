@@ -1,0 +1,19 @@
+{
+  "name": "nodedevcamperproject",
+  "version": "1.0.0",
+  "description": "Api DevCamp",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server",
+    "start": "NODE_ENV=production node server"
+  },
+  "author": "Syed",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
