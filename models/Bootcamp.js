@@ -29,6 +29,10 @@ const BootCampSchema = new mongoose.Schema({
     type: String,
     maxlength: [20, 'Phone number can not be longer than 20 characters'],
   },
+  address: {
+    type: String,
+    required: [true, 'Please add an address'],
+  },
   location: {
     type: {
       type: String,

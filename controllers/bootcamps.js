@@ -13,7 +13,8 @@ exports.getBootCamps = async (req, res, next) => {
       count: bootcamps.length,
     });
   } catch (err) {
-    next(new errorResponse('Bootcamps do not exist', 404));
+    // next(new errorResponse('Bootcamps do not exist', 404));
+    next(err);
   }
 };
 
@@ -34,7 +35,8 @@ exports.getBootCamp = async (req, res, next) => {
       data: bootcamp,
     });
   } catch (err) {
-    next(new errorResponse('Bootcamp does not exist for the given id', 404));
+    // next(new errorResponse('Bootcamp does not exist for the given id', 404));
+    next(err);
   }
 };
 
@@ -50,7 +52,8 @@ exports.createBootCamp = async (req, res, next) => {
       data: bootcamp,
     });
   } catch (err) {
-    next(new errorResponse('Error creating a bootcamp', 400));
+    // next(new errorResponse('Error creating a bootcamp', 400));
+    next(err);
   }
 };
 
@@ -64,14 +67,18 @@ exports.updateBootCamp = async (req, res, next) => {
       runValidators: true,
     });
     if (!bootcamp) {
-      return res.status(400).json({ success: false });
+      return next(
+        new errorResponse('Bootcamp does not exist for the given id', 404)
+      );
     }
     res.status(200).json({
       success: true,
       data: bootcamp,
     });
   } catch (error) {
-    next(new errorResponse('Error updating the bootcamp', 400));
+    console.log(error);
+    // next(new errorResponse('Error updating the bootcamp', 400));
+    next(error);
   }
 };
 
@@ -82,13 +89,16 @@ exports.deleteBootCamp = async (req, res, next) => {
   try {
     const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
     if (!bootcamp) {
-      return res.status(400).json({ success: false });
+      return next(
+        new errorResponse('Bootcamp does not exist for the given id', 404)
+      );
     }
     res.status(200).json({
       success: true,
       data: {},
     });
   } catch (error) {
-    next(new errorResponse('Error deleting the bootcamp', 400));
+    // next(new errorResponse('Error deleting the bootcamp', 400));
+    next(error);
   }
 };
