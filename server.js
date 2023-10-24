@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const connectDB = require('./config/db');
 const colors = require('colors');
 const errorHandler = require('./middlewares/error');
+const fileUpload = require('express-fileupload');
 
 dotenv.config({ path: './config/config.env' });
 
@@ -24,6 +25,8 @@ app.use('/api/v1/bootcamps', bootcamps);
 app.use('/api/v1/courses/', courses);
 
 app.use(errorHandler);
+
+app.use(fileUpload());
 
 const PORT = process.env.PORT || 5600;
 // console.log(process.env);
