@@ -15,9 +15,15 @@ const {
 
 const courseRouter = require('../routes/course');
 
+const Bootcamp = require('../models/Bootcamp');
+const advancedResults = require('../middlewares/advancedResults');
+
 router.use('/:bootcampId/courses', courseRouter);
 
-router.route('/').get(getBootCamps).post(createBootCamp);
+router
+  .route('/')
+  .get(advancedResults(Bootcamp, 'Courses'), getBootCamps)
+  .post(createBootCamp);
 
 router
   .route('/:id')
