@@ -23,9 +23,11 @@ app.use(fileUpload());
 app.use(express.static(path.join(__dirname, 'public')));
 const bootcamps = require('./routes/bootcamp');
 const courses = require('./routes/course');
+const auth = require('./routes/auth');
 
 app.use('/api/v1/bootcamps', bootcamps);
-app.use('/api/v1/courses/', courses);
+app.use('/api/v1/courses', courses);
+app.use('/api/v1/auth', auth);
 
 app.use(errorHandler);
 
