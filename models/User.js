@@ -42,6 +42,7 @@ UserSchema.methods.getJsonWebToken = function () {
   return token;
 };
 
+//match user entered password to hashed password in database
 UserSchema.methods.isMatch = async function (userPassword) {
   return await bcrypt.compare(userPassword, this.password);
 };

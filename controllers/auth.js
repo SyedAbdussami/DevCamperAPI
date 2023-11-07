@@ -15,11 +15,7 @@ exports.register = asyncHandler(async (req, res, next) => {
     password,
     role,
   });
-  const token = user.getJsonWebToken();
-  res.status(200).json({
-    success: true,
-    token,
-  });
+  tokenResponse(user, 200, res);
 });
 
 //@desc login a user
@@ -32,20 +28,47 @@ exports.login = asyncHandler(async (req, res, next) => {
     return next(new errorResponse('Please provide email and password', 400));
   }
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).select('+password');
   if (!user) {
     return next(
       new errorResponse('User does not exist. Please register first', 401)
     );
   }
-  const isMatch = user.isMatch(password);
+  const isMatch = await user.isMatch(password);
 
   if (!isMatch) {
     return next(new errorResponse('Passord or email is wrong', 401));
   }
+  tokenResponse(user, 200, res);
+});
+
+const tokenResponse = (user, statusCode, res) => {
   const token = user.getJsonWebToken();
-  res.status(200).json({
+  const options = {
+    httpOnly: true,
+    exprires: new Date(
+      Date.now() * process.env.JWT_EXPIRE_COOKIE * 24 * 60 * 60 * 1000
+    ),
+  };
+
+  if (process.env.NODE_ENV === 'production') {
+    options.secure = true;
+  }
+
+  res.status(statusCode).cookie('token', token, options).json({
     success: true,
     token,
+  });
+};
+
+//@desc login a user
+//@route POST /api/v1/user/login
+//@access Public
+exports.getMe = asyncHandler(async (req, res, next) => {
+  const user = await User.findOne(req.user);
+
+  res.status(200).json({
+    success: true,
+    user,
   });
 });
