@@ -50,15 +50,25 @@ exports.getCourse = asyncHandler(async (req, res, next) => {
 //@access Public
 exports.createCourse = asyncHandler(async (req, res, next) => {
   req.body.bootcamp = req.params.bootcampId;
+  req.body.user = req.user.id;
 
   const bootcamp = await Bootcamp.findById(req.params.bootcampId);
-  console.log(req.params);
+  // console.log(req.params);
 
   if (!bootcamp) {
     return next(
       new errorResponse(
         `Bootcamp does not exist for the given id ${req.params.bootcampId}`,
         404
+      )
+    );
+  }
+
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    return next(
+      new errorResponse(
+        `User ${req.user.id} is not authorised to add course to bootcamp ${bootcamp._id}`,
+        403
       )
     );
   }
@@ -74,11 +84,22 @@ exports.createCourse = asyncHandler(async (req, res, next) => {
 //@access Private
 exports.updateCourse = asyncHandler(async (req, res, next) => {
   let course = await Course.findById(req.params.id);
+
+  // course.user=req.user.id
   if (!course) {
     return next(
       new errorResponse(
         `Course does not exist for the given id ${req.params.id}`,
         404
+      )
+    );
+  }
+  const bootcamp = await Bootcamp.findById(course.bootcamp);
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    return next(
+      new errorResponse(
+        `User ${req.user.id} is not authorised to update course ${course._id}`,
+        403
       )
     );
   }

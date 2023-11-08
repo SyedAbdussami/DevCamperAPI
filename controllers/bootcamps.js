@@ -58,15 +58,25 @@ exports.createBootCamp = asyncHandler(async (req, res, next) => {
 //@route PUT /api/v1/bootcamps/:id
 //@access Public
 exports.updateBootCamp = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  let bootcamp = await Bootcamp.findById(req.params.id);
   if (!bootcamp) {
     return next(
       new errorResponse('Bootcamp does not exist for the given id', 404)
     );
   }
+
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    return next(
+      new errorResponse(
+        `User ${req.user.id} is not authorised to make updates to this bootcamp`,
+        403
+      )
+    );
+  }
+  bootcamp = await Bootcamp.findOneAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
   res.status(200).json({
     success: true,
     data: bootcamp,
@@ -82,6 +92,15 @@ exports.deleteBootCamp = asyncHandler(async (req, res, next) => {
   if (!bootcamp) {
     return next(
       new errorResponse('Bootcamp does not exist for the given id', 404)
+    );
+  }
+
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    return next(
+      new errorResponse(
+        `User ${req.user.id} is not authorised to delete this bootcamp`,
+        403
+      )
     );
   }
   bootcamp.deleteOne();
@@ -120,6 +139,15 @@ exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
   if (!bootcamp) {
     return next(
       new errorResponse('Bootcamp does not exist for the given id', 404)
+    );
+  }
+
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    return next(
+      new errorResponse(
+        `User ${req.user.id} is not authorised to make updates to this bootcamp`,
+        403
+      )
     );
   }
 
