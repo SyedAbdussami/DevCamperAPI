@@ -49,7 +49,7 @@ UserSchema.methods.isMatch = async function (userPassword) {
 };
 
 UserSchema.pre('save', async function (next) {
-  if (this.isModified('password')) {
+  if (!this.isModified('password')) {
     next();
   }
   const salt = await bcrypt.genSalt(10);
@@ -63,7 +63,7 @@ UserSchema.methods.getResetPasswordToken = function () {
   this.resetPasswordToken = crypto
     .createHash('sha256')
     .update(resetToken)
-    .toString('hex');
+    .digest('hex');
 
   this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
 

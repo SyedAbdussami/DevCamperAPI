@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const errorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middlewares/async');
+const sendEmail = require('../utils/sendMail');
+const crypto = require('crypto');
 
 //@desc register a user
 //@route POST /api/v1/user/register
@@ -83,14 +85,62 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
     return next(new errorResponse('User not found for this email', 404));
   }
 
-  const resetToken = User.getResetPaswordToken();
+  const resetToken = user.getResetPasswordToken();
 
   // console.log(resetToken);
+  // console.log(req.get('host'));
 
   await user.save({ validateBeforeSave: false });
 
-  res.status(200).json({
-    success: true,
-    user,
+  let resetUrl = `${req.protocol}://${req.get(
+    'host'
+  )}/api/v1/auth/resetpassword/${resetToken}`;
+  // console.log(resetUrl);
+
+  const message = `please make a PUT resquest to ${resetUrl}`;
+  console.log(message);
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Password reset token',
+      message,
+    });
+    res.status(200).json({
+      success: true,
+      data: 'email sent',
+    });
+  } catch (error) {
+    console.log(error);
+    user.resetPasswordExpire = undefined;
+    user.resetPasswordToken = undefined;
+    await user.save({ validateBeforeSave: false });
+    return next(new errorResponse('Unable to send the email', 500));
+  }
+});
+
+//@desc login a user
+//@route POST /api/v1/user/login
+//@access Public
+exports.resetPassword = asyncHandler(async (req, res, next) => {
+  // console.log(req.params);
+  const resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(req.params.resetToken)
+    .digest('hex');
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() },
   });
+
+  if (!user) {
+    return next(new errorResponse('invalid token', 400));
+  }
+  user.password = req.body.password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordToken = undefined;
+
+  await user.save();
+
+  tokenResponse(user, 200, res);
 });
