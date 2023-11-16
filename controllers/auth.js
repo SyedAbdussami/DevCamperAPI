@@ -144,3 +144,37 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
 
   tokenResponse(user, 200, res);
 });
+
+//@desc update user details
+//@route PUT /api/v1/auth/updatedetails
+//@access Private
+exports.updateUserDetails = asyncHandler(async (req, res, next) => {
+  const fieldsToUpdate = {
+    name: req.body.name,
+    email: req.body.email,
+  };
+  const user = await User.findOneAndUpdate(req.user.id, fieldsToUpdate, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(200).json({
+    success: true,
+    user,
+  });
+});
+
+//@desc update user password
+//@route PUT /api/v1/auth/updatePassword
+//@access Private
+exports.updatePassword = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.user.id).select('+password');
+  if (!(await user.isMatch(req.body.currentPassword))) {
+    return next(new errorResponse('User Does Not exist', 400));
+  }
+
+  user.password = req.body.newPassword;
+  await user.save();
+
+  tokenResponse(user, 200, res);
+});

@@ -14,6 +14,7 @@ const {
 } = require('../controllers/bootcamps');
 
 const courseRouter = require('../routes/course');
+const reviewRouter = require('../routes/reviews');
 
 const Bootcamp = require('../models/Bootcamp');
 const advancedResults = require('../middlewares/advancedResults');
@@ -21,6 +22,8 @@ const advancedResults = require('../middlewares/advancedResults');
 const { protect, authorize } = require('../middlewares/auth');
 
 router.use('/:bootcampId/courses', courseRouter);
+
+router.use('/:bootcampId/reviews', reviewRouter);
 
 router
   .route('/')
